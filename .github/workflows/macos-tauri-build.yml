@@ -1,0 +1,42 @@
+name: Build Tauri App for macOS
+
+on:
+  push:
+    branches:
+      - main  # Trigger the build on pushes to the main branch (you can change this)
+  pull_request:
+    branches:
+      - main  # Also trigger builds for pull requests to the main branch
+
+jobs:
+  build:
+    runs-on: macos-latest  # Use a macOS environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # Check out the code from your repository
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Ensure Node.js is installed
+
+      - name: Install Rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source $HOME/.cargo/env  # Install Rust (required for Tauri)
+
+      - name: Install Tauri Bundler
+        run: npm install -g @tauri-apps/cli  # Install the Tauri CLI globally
+
+      - name: Install dependencies
+        run: npm install  # Install your project's Node.js dependencies
+
+      - name: Build Tauri App
+        run: npm run tauri build  # Run the Tauri build process
+
+      - name: Upload DMG file
+        uses: actions/upload-artifact@v2
+        with:
+          name: tauri-sample-dmg  # Name of the artifact (the DMG file)
+          path: src-tauri/target/release/bundle/dmg/*.dmg  # Path to the DMG file
